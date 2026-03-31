@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid mt-4 px-3 px-md-5">
+    <div class="row g-4">
+        <div class="col-12 col-md-4">
+            <div class="card h-100 p-4 shadow-sm border-secondary">
+                <h4 class="text-dark">Add Author</h4>
+                <hr>
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Author Name</label>
+                        <input type="text" name="author_name" class="form-control" placeholder="Enter Author Name" required>
+                    </div>
+                    <button type="submit" name="submit_author" class="btn btn-dark w-100 fw-bold">Add Author</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-4">
+            <div class="card h-100 p-4 shadow-sm border-secondary">
+                <h4 class="text-dark">Add Category</h4>
+                <hr>
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Category Name</label>
+                        <input type="text" name="type_name" class="form-control" placeholder="e.g. Science Fiction" required>
+                    </div>
+                    <button type="submit" name="submit_bookcatg" class="btn btn-dark w-100 fw-bold">Add Category</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-4">
+            <div class="card h-100 p-4 shadow-sm border-secondary">
+                <h4 class="text-dark">Add Publisher</h4>
+                <hr>
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Publisher Name</label>
+                        <input type="text" name="publisher_name" class="form-control" placeholder="Enter Publisher Name" required>
+                    </div>
+                    <button type="submit" name="submit_publisher" class="btn btn-dark w-100 fw-bold">Add Publisher</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4 g-4">
+        <div class="col-12 col-md-4">
+            <div class="card shadow-sm h-100 overflow-hidden">
+                <div class="card-header bg-dark text-white py-3">
+                    <h5 class="mb-0">Authors</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <tbody>
+                            {% for a in authors %}
+                            <tr>
+                                <td class="align-middle px-3 py-3">{{ a.name }}</td>
+                                <td class="text-end px-3">
+                                    <a href="{% url 'delete_author' a.id %}" class="text-danger" onclick="return confirm('Delete author?')">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td class="text-center text-muted py-4">No authors.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-4">
+            <div class="card shadow-sm h-100 overflow-hidden">
+                <div class="card-header bg-dark text-white py-3">
+                    <h5 class="mb-0">Categories</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <tbody>
+                            {% for bt in booktypes %}
+                            <tr>
+                                <td class="align-middle px-3 py-3">{{ bt.name }}</td>
+                                <td class="text-end px-3">
+                                    <a href="{% url 'delete_book_category' bt.id %}" class="text-danger" onclick="return confirm('Delete category?')">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td class="text-center text-muted py-4">No categories.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-4">
+            <div class="card shadow-sm h-100 overflow-hidden">
+                <div class="card-header bg-dark text-white py-3">
+                    <h5 class="mb-0">Publishers</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <tbody>
+                            {% for p in publishers %}
+                            <tr>
+                                <td class="align-middle px-3 py-3">{{ p.name }}</td>
+                                <td class="text-end px-3">
+                                    <a href="{% url 'delete_publisher' p.id %}" class="text-danger" onclick="return confirm('Delete publisher?')">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td class="text-center text-muted py-4">No publishers.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

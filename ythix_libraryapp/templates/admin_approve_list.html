@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+  
+    .id-thumbnail {
+        width: 80px;
+        height: 50px;
+        object-fit: cover;
+        cursor: zoom-in;
+        transition: transform 0.2s;
+    }
+    .id-thumbnail:hover {
+        transform: scale(1.1);
+    }
+    .avatar-square {
+        width: 45px;
+        height: 45px;
+        object-fit: cover;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4 bg-light min-vh-100">
+    <div class="d-flex justify-content-between align-items-center bg-white p-4 rounded-4 shadow-sm mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-0">Membership Requests</h2>
+            <p class="text-muted small mb-0">Review and manage pending user applications</p>
+        </div>
+        <div>
+            <span class="badge rounded-pill bg-primary px-3 py-2 fs-6">
+                {{ profiles|length }} Pending
+            </span>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr class="text-uppercase small fw-bold text-secondary">
+                        <th class="px-4 py-3">User Details</th>
+                        <th class="py-3">Contact Info</th>
+                        <th class="py-3 text-center">Identity Proof</th>
+                        <th class="py-3">Home Address</th>
+                        <th class="px-4 py-3 text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for profile in profiles %}
+                    <tr>
+                        <td class="px-4">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-square rounded-3 bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center fw-bold border me-3">
+                                    {{ profile.user.username|slice:":1"|upper }}
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-dark">{{ profile.user.get_full_name|default:profile.user.username }}</div>
+                                    <div class="text-muted small">@{{ profile.user.username }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="small mb-1">
+                                <i class="bi bi-envelope text-muted me-1"></i>{{ profile.user.email }}
+                            </div>
+                            <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 rounded-pill px-2">
+                                <i class="bi bi-phone me-1"></i>{{ profile.contact_no }}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            {% if profile.image %}
+                                <a href="{{ profile.image.url }}" target="_blank">
+                                    <img src="{{ profile.image.url }}" class="id-thumbnail rounded-2 border shadow-sm" alt="ID">
+                                </a>
+                            {% else %}
+                                <span class="badge bg-light text-muted border fw-normal">No ID Uploaded</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="text-secondary small" style="max-width: 200px;">
+                                <i class="bi bi-geo-alt me-1"></i>{{ profile.address }}
+                            </div>
+                        </td>
+                        <td class="px-4 text-end">
+                            <div class="btn-group shadow-sm">
+                                <a href="{% url 'approve_user' profile.user.id %}" class="btn btn-success btn-sm px-3 fw-semibold">
+                                    <i class="bi bi-check-lg me-1"></i> Approve
+                                </a>
+                                <a href="{% url 'delete_user' profile.user.id %}" class="btn btn-outline-danger btn-sm" 
+                                   onclick="return confirm('Reject this user?')">
+                                    <i class="bi bi-trash3"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="py-5 text-center">
+                            <div class="py-4">
+                                <i class="bi bi-inbox text-muted opacity-25" style="font-size: 4rem;"></i>
+                                <h4 class="text-muted mt-3 fw-light">All caught up!</h4>
+                                <p class="text-secondary">No new membership requests to review.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

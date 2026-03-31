@@ -1,0 +1,131 @@
+{% extends 'user_base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row g-4 g-lg-5">
+        <div class="col-12 col-md-5 col-lg-4 order-md-last">
+            <h4 class="d-flex justify-content-between align-items-center mb-3">
+                <span class="text-primary">Your Cart</span>
+                <span class="badge bg-primary rounded-pill">{{ cart_count }}</span>
+            </h4>
+            <ul class="list-group mb-3 shadow-sm">
+                {% for item in cart_items %}
+                <li class="list-group-item d-flex justify-content-between lh-sm py-3">
+                    <div>
+                        <h6 class="my-0">{{ item.book.name }}</h6>
+                        <small class="text-muted">Quantity: {{ item.quantity }}</small>
+                    </div>
+                    <span class="text-muted">₹{{ item.total_price }}</span>
+                </li>
+                {% endfor %}
+
+                <li class="list-group-item d-flex justify-content-between bg-light py-3">
+                    <span class="fw-bold">Total (INR)</span>
+                    <strong class="text-primary fs-5">₹{{ total_price }}</strong>
+                </li>
+            </ul>
+        </div>
+
+        <div class="col-12 col-md-7 col-lg-8">
+            <h4 class="mb-4 fw-bold">Shipping & Payment</h4>
+            {% if messages %}
+            {% for message in messages %}
+            {% if 'order_msg' in message.tags %}
+            <div class="alert alert-{{ message.level_tag }} alert-dismissible fade show border-0 shadow-sm mb-4"
+                role="alert">
+                <small class="fw-bold">{{ message }}</small>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+            <form method="POST" id="checkoutForm">
+                {% csrf_token %}
+                <div class="row g-3">
+                    <div class="col-12 col-sm-6">
+                        <label class="form-label small text-muted">First Name</label>
+                        <input type="text" class="form-control" value="{{ user.first_name }}" readonly>
+                    </div>
+
+                    <div class="col-12 col-sm-6">
+                        <label class="form-label small text-muted">Last Name</label>
+                        <input type="text" class="form-control" value="{{ user.last_name }}" readonly>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label small text-muted">Email Address</label>
+                        <input type="email" class="form-control" value="{{ user.email }}" readonly>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label small text-muted">Delivery Address</label>
+                        <textarea name="address" class="form-control" rows="3" required>{{ profile.address }}</textarea>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label small text-muted">Contact Number</label>
+                        <input type="text" name="contact" class="form-control" value="{{ profile.contact_no }}"
+                            required>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <h4 class="mb-3 fw-bold">Payment Option</h4>
+                <div class="bg-light p-3 rounded-3 border">
+                    <div class="form-check mb-2">
+                        <input id="upi" name="paymentMethod" value="UPI" type="radio" class="form-check-input" checked
+                            required>
+                        <label class="form-check-label" for="upi">UPI / Scanner</label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input id="netbanking" name="paymentMethod" value="Net Banking" type="radio"
+                            class="form-check-input" required>
+                        <label class="form-check-label" for="netbanking">Net Banking</label>
+                    </div>
+                    <div class="form-check mb-0">
+                        <input id="cod" name="paymentMethod" value="COD" type="radio" class="form-check-input" required>
+                        <label class="form-check-label" for="cod">Cash on Delivery</label>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <button class="w-100 btn btn-lg text-white py-3 shadow" type="button"
+                    style="background-color: #d81e91; border-radius: 12px; font-weight: 600;" data-bs-toggle="modal"
+                    data-bs-target="#orderconfirmmodal">
+                    Place Order (₹{{ total_price }})
+                </button>
+            </form>
+
+            <div class="modal fade" id="orderconfirmmodal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow">
+                        <div class="modal-header border-0">
+                        </div>
+                        <div class="modal-body text-center py-5">
+                            <i class="bi bi-check-circle-fill text-success display-1 mb-4"></i>
+                            <h3 class="fw-bold">Ready to Order?</h3>
+                            <p class="text-muted">Click the button below to confirm your purchase. A confirmation email
+                                will be sent to <strong>{{ user.email }}</strong>.</p>
+                        </div>
+                        <div class="modal-footer border-0 pb-4">
+                            <button type="button" class="btn btn-dark w-100 py-2" id="confirmOkBtn">Confirm & Place
+                                Order</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('confirmOkBtn').addEventListener('click', function () {
+        this.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Processing...';
+        this.disabled = true;
+        document.getElementById('checkoutForm').submit();
+    });
+</script>
+{% endblock %}

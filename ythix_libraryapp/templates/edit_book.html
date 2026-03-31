@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="edit-wrapper py-4 py-md-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-10">
+                
+                <div class="card edit-card shadow-lg border-0 overflow-hidden">
+                    <div class="row g-0">
+                        
+                        <div class="col-md-4 bg-dark d-flex flex-column align-items-center justify-content-center p-4 border-bottom border-md-bottom-0 border-md-end border-white border-opacity-10">
+                            <p class="text-white-50 small text-uppercase fw-bold mb-3 mb-md-4">Current Cover</p>
+                            <div class="preview-container">
+                                {% if book.image %}
+                                    <img src="{{ book.image.url }}" alt="current_cover" class="img-fluid rounded shadow-lg preview-img">
+                                {% else %}
+                                    <div class="no-image-placeholder mx-auto">No Image</div>
+                                {% endif %}
+                            </div>
+                            <div class="mt-3 mt-md-4 text-center">
+                                <span class="badge bg-cyan rounded-pill px-3">{{ book.book_type.name }}</span>
+                                <h5 class="text-white mt-2 mb-0">{{ book.name }}</h5>
+                            </div>
+                        </div>
+
+                        <div class="col-md-8 bg-white p-4 p-lg-5">
+                            <h3 class="fw-bold text-dark mb-4 text-center text-md-start">Update Book Details</h3>
+                            
+                            <form method="POST" enctype="multipart/form-data">
+                                {% csrf_token %}
+
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <label class="form-label fw-bold small text-muted">BOOK TITLE</label>
+                                        <input type="text" name="name" class="form-control custom-input" value="{{ book.name }}" required>
+                                    </div>
+                                    
+                                    <div class="col-sm-6">
+                                        <label class="form-label fw-bold small text-muted">AUTHOR</label>
+                                        <select name="author" class="form-select custom-input" required>
+                                            {% for a in authors %}
+                                                <option value="{{ a.id }}" {% if a.id == book.author.id %}selected{% endif %}>{{ a.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+
+                                    <div class="col-sm-6">
+                                        <label class="form-label fw-bold small text-muted">CATEGORY</label>
+                                        <select name="type" class="form-select custom-input" required>
+                                            {% for t in types %}
+                                                <option value="{{ t.id }}" {% if t.id == book.book_type.id %}selected{% endif %}>{{ t.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+
+                                    <div class="col-sm-6">
+                                        <label class="form-label fw-bold small text-muted">PUBLISHER</label>
+                                        <select name="publisher" class="form-select custom-input" required>
+                                            {% for p in publishers %}
+                                                <option value="{{ p.id }}" {% if p.id == book.publisher.id %}selected{% endif %}>{{ p.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+
+                                    <div class="col-6 col-sm-3">
+                                        <label class="form-label fw-bold small text-muted">PRICE (₹)</label>
+                                        <input type="number" step="0.01" name="price" class="form-control custom-input" value="{{ book.price }}" required>
+                                    </div>
+
+                                    <div class="col-6 col-sm-3">
+                                        <label class="form-label fw-bold small text-muted">STOCK</label>
+                                        <input type="number" name="stock" class="form-control custom-input" value="{{ book.stock }}" required>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <label class="form-label fw-bold small text-muted">DESCRIPTION</label>
+                                        <textarea name="description" class="form-control custom-input" rows="4" required>{{ book.description }}</textarea>
+                                    </div>
+
+                                    <div class="col-12 mb-2">
+                                        <label class="form-label fw-bold small text-muted">UPDATE COVER IMAGE</label>
+                                        <input type="file" name="image" class="form-control custom-input" accept="image/*">
+                                        <small class="text-muted d-block mt-1">Leave blank to keep the current cover.</small>
+                                    </div>
+                                </div>
+
+                                <div class="d-grid d-sm-flex gap-3 mt-4">
+                                    <button type="submit" class="btn btn-cyan text-white fw-bold px-5 rounded-pill shadow-sm">
+                                        SAVE CHANGES
+                                    </button>
+                                    <a href="{% url 'show_books' %}" class="btn btn-outline-secondary px-4 rounded-pill text-center">
+                                        CANCEL
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .edit-wrapper {
+        background: linear-gradient(rgba(44, 62, 80, 0.95), rgba(44, 62, 80, 0.95)), 
+                    url('{% static "assets/bmw-m5-red.jpg" %}') no-repeat center center;
+        background-size: cover;
+        background-attachment: fixed;
+        min-height: 100vh;
+    }
+
+    .edit-card { border-radius: 20px; }
+    .bg-cyan, .btn-cyan { background-color: #00acc1 !important; color: white; }
+    .btn-cyan:hover { background-color: #008ba3 !important; transform: translateY(-2px); }
+
+    .custom-input {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 10px;
+        padding: 0.6rem 1rem;
+        transition: all 0.2s;
+    }
+
+    .custom-input:focus {
+        background-color: #fff;
+        border-color: #00acc1;
+        box-shadow: 0 0 0 0.25rem rgba(0, 172, 193, 0.1);
+    }
+
+    .preview-img {
+        max-height: 300px;
+        filter: drop-shadow(0 10px 20px rgba(0,0,0,0.3));
+        object-fit: contain;
+    }
+
+    .no-image-placeholder {
+        width: 150px;
+        height: 200px;
+        background: #333;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #666;
+        border-radius: 10px;
+        border: 2px dashed #444;
+    }
+    
+   
+    @media (min-width: 768px) {
+        .border-md-end { border-right: 1px solid rgba(255,255,255,0.1) !important; }
+        .border-md-bottom-0 { border-bottom: 0 !important; }
+    }
+</style>
+{% endblock %}

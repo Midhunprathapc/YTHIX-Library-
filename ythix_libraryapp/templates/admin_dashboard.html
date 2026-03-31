@@ -1,0 +1,305 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+    body {
+        background-color: #fdfdfd;
+        font-family: 'Inter', Arial, sans-serif;
+        color: #1a1a1a;
+    }
+
+    * {
+        border-radius: 0px !important;
+    }
+
+    .library-header {
+        margin-bottom: 50px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .brand-title {
+        font-size: 64px;
+        font-weight: 900;
+        text-transform: uppercase;
+        line-height: 0.9;
+        letter-spacing: -2px;
+        margin: 0;
+    }
+
+
+    @media (max-width: 576px) {
+        .brand-title {
+            font-size: 48px;
+        }
+    }
+
+    .date-display {
+        border-left: 3px solid #1a1a1a;
+        padding-left: 15px;
+        text-align: left;
+    }
+
+    .stat-container {
+        display: flex;
+        border-top: 2px solid #1a1a1a;
+        border-bottom: 2px solid #1a1a1a;
+        margin-bottom: 40px;
+        flex-wrap: wrap;
+    }
+
+    .stat-link {
+        flex: 1;
+        min-width: 200px; 
+        padding: 25px;
+        text-decoration: none;
+        color: #1a1a1a;
+        border-right: 1px solid #1a1a1a;
+        border-bottom: 1px solid #1a1a1a; 
+    }
+
+   
+    @media (max-width: 768px) {
+        .stat-link {
+            flex: 0 0 50%;
+        }
+    }
+    @media (max-width: 480px) {
+        .stat-link {
+            flex: 0 0 100%;
+            border-right: none;
+        }
+    }
+
+    .stat-link:last-child {
+        border-right: none;
+    }
+
+    .stat-link:hover {
+        background-color: #f4f4f4;
+    }
+
+    .label-small {
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #666;
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .number-large {
+        font-size: 42px;
+        font-weight: 900;
+        margin: 0;
+    }
+
+    .card-ythix {
+        background: #ffffff;
+        border: 1px solid #1a1a1a;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+   
+    .table-responsive-ythix {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin-bottom: 1rem;
+    }
+
+    .table-ythix {
+        width: 100%;
+        border-collapse: collapse;
+        border: 1px solid #1a1a1a;
+        background: white;
+        min-width: 500px; 
+    }
+
+    .table-ythix th {
+        background: #eeeeee;
+        border: 1px solid #1a1a1a;
+        padding: 10px;
+        font-size: 12px;
+        font-weight: 800;
+        text-align: left;
+    }
+
+    .table-ythix td {
+        border: 1px solid #1a1a1a;
+        padding: 10px;
+        font-size: 14px;
+    }
+
+    .section-heading-ythix {
+        font-size: 14px;
+        font-weight: 900;
+        text-transform: uppercase;
+        border-bottom: 2px solid #1a1a1a;
+        padding-bottom: 3px;
+        margin-bottom: 15px;
+        display: inline-block;
+    }
+
+    .badge-ythix {
+        font-size: 11px;
+        font-weight: 900;
+        padding: 3px 7px;
+        border: 1px solid #000;
+        display: inline-block;
+    }
+</style>
+
+<div class="container-fluid py-4 px-3 px-lg-5">
+
+    <div class="library-header">
+        <div>
+            <h1 class="brand-title">YTHIX<br>LIBRARY</h1>
+        </div>
+        <div class="date-display">
+            </div>
+    </div>
+
+    <div class="stat-container">
+        <a href="{% url 'show_books' %}" class="stat-link">
+            <span class="label-small">Total Inventory</span>
+            <p class="number-large">{{ total_books }}</p>
+        </a>
+        <a href="{% url 'view_users' %}" class="stat-link">
+            <span class="label-small">Member Database</span>
+            <p class="number-large" style="color: #0d6efd;">{{ total_members }}</p>
+        </a>
+        <a href="{% url 'admin_approve_list' %}" class="stat-link" style="background: #fafafa;">
+            <span class="label-small" style="color: #dc3545;">Pending Queue</span>
+            <p class="number-large" style="color: #dc3545;">{{ pending_approvals }}</p>
+        </a>
+        <a href="{% url 'admin_purchase_history' %}" class="stat-link">
+            <span class="label-small">Fulfillment</span>
+            <p class="number-large">{{ total_orders }}</p>
+        </a>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-sm-6 col-md-4">
+            <div class="card-ythix">
+                <span class="label-small">Active Rentals</span>
+                <p class="number-large" style="font-size: 24px;">{{ total_rental_books }}</p>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-4">
+            <div class="card-ythix">
+                <span class="label-small">Sales Revenue</span>
+                <p class="number-large" style="font-size: 24px; color: #198754;">₹{{ total_sales_amount }}</p>
+            </div>
+        </div>
+        <div class="col-sm-12 col-md-4">
+            <div class="card-ythix">
+                <span class="label-small">Fine Collection</span>
+                <p class="number-large" style="font-size: 24px; color: #dc3545;">₹{{ total_fines_collected }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-5">
+        <div class="col-lg-6 mb-4 mb-lg-0">
+            <h5 class="section-heading-ythix">Unpaid Fines</h5>
+            <div class="table-responsive-ythix">
+                <table class="table-ythix">
+                    <thead>
+                        <tr>
+                            <th>USER</th>
+                            <th>ITEM</th>
+                            <th style="text-align: right;">BALANCE</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in fine_paying_list %}
+                        <tr>
+                            <td style="font-weight: bold;">{{ r.user.username }}</td>
+                            <td style="color: #666;">{{ r.book.name|truncatechars:20 }}</td>
+                            <td style="text-align: right; color: #dc3545; font-weight: bold;">₹{{ r.fine_paid }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="3" style="text-align: center; padding: 20px; color: #999;">All debts settled.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <h5 class="section-heading-ythix">Paid Fines</h5>
+            <div class="table-responsive-ythix">
+                <table class="table-ythix">
+                    <thead>
+                        <tr>
+                            <th>USER</th>
+                            <th>ITEM</th>
+                            <th style="text-align: right;">STATUS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in fine_paid_list %}
+                        <tr>
+                            <td style="font-weight: bold;">{{ r.user.username }}</td>
+                            <td style="color: #666;">{{ r.book.name|truncatechars:20 }}</td>
+                            <td style="text-align: right; color: #198754; font-weight: bold;">PAID ₹{{ r.fine_paid }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="3" style="text-align: center; padding: 20px; color: #999;">No recent payments.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+            <h5 class="section-heading-ythix" style="margin: 0;">Active Rentals</h5>
+            <span style="background: #1a1a1a; color: white; padding: 5px 15px; font-weight: bold; font-size: 12px;">
+                {{ active_rentals_list.count }} ACTIVE ITEMS
+            </span>
+        </div>
+        <div class="table-responsive-ythix">
+            <table class="table-ythix">
+                <thead>
+                    <tr>
+                        <th>USER</th>
+                        <th>BOOK TITLE</th>
+                        <th>ISSUED</th>
+                        <th>DUE_DATE</th>
+                        <th style="text-align: right;">STATUS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for rental in active_rentals_list %}
+                    <tr>
+                        <td>
+                            <div style="font-weight: 900;">{{ rental.user.first_name }}</div>
+                            <div style="font-size: 11px; color: #0d6efd; font-weight: bold;">ID: {{ rental.user.id }}</div>
+                        </td>
+                        <td>{{ rental.book.name }}</td>
+                        <td>{{ rental.rent_date|date:"d M Y" }}</td>
+                        <td style="{% if rental.due_date < today %}color: #dc3545; font-weight: bold;{% endif %}">
+                            {{ rental.due_date|date:"d M Y" }}
+                        </td>
+                        <td style="text-align: right;">
+                            {% if rental.due_date < today %}
+                            <div class="badge-ythix" style="background: #ffeded; color: #dc3545; border-color: #dc3545;">OVERDUE</div>
+                            {% else %}
+                            <div class="badge-ythix" style="background: #edfcf5; color: #198754; border-color: #198754;">ACTIVE</div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

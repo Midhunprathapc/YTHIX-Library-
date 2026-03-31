@@ -1,0 +1,84 @@
+{% extends 'admin_dashboard.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Registered Users & History</h2>
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Image</th>
+                    <th>Full Name</th>
+                    <th>Email</th>
+                    <th>Contact</th>
+                    <th>Rental History</th>
+                    <th>Purchase History (Cart)</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in profiles %}
+                <tr>
+                    <td>
+                        {% if p.image %}
+                        <img src="{{ p.image.url }}" width="50" class="rounded-circle">
+                        {% else %}
+                        No Image
+                        {% endif %}
+                    </td>
+                    <td>{{ p.user.first_name }} {{ p.user.last_name }}</td>
+                    <td>{{ p.user.email }}</td>
+                    <td>{{ p.contact_no }}</td>
+
+                    <td>
+                        <button class="btn btn-sm btn-info" data-bs-toggle="collapse"
+                            data-bs-target="#rentals{{ p.id }}">
+                            View Rentals ({{ p.user.rental_set.count }})
+                        </button>
+                        <div id="rentals{{ p.id }}" class="collapse mt-2">
+                            <ul class="list-group small">
+                                {% for rental in p.user.rental_set.all %}
+                                <li class="list-group-item">
+                                    {{ rental.book.name }} <br>
+                                    <span class="text-muted">Due: {{ rental.due_date }}</span>
+                                    {% if rental.is_lost %}
+                                    <b class="text-danger"> - LOST (Fine: ₹{{ rental.fine_paid }})</b>
+                                    {% endif %}
+                                </li>
+                                {% empty %}
+                                <li class="list-group-item">No rentals found.</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </td>
+
+                    <td>
+                        <button class="btn btn-sm btn-secondary" data-bs-toggle="collapse"
+                            data-bs-target="#purchase{{ p.id }}">
+                            View Purchase History ({{ p.user.order_set.count }})
+                        </button>
+                        <div id="purchase{{ p.id }}" class="collapse mt-2">
+                            <ul class="list-group small">
+                                {% for order in p.user.order_set.all %}
+                                <li class="list-group-item bg-light mb-1">
+                                    <strong>Order #{{ order.id }}</strong> <br>
+                                    <div style="white-space: pre-line;">{{ order.items_details }}</div>
+                                    <span class="text-success fw-bold">Total: ₹{{ order.total_price }}</span> <br>
+                                    <small class="text-muted">{{ order.purchase_date|date:"d M Y" }}</small>
+                                </li>
+                                {% empty %}
+                                <li class="list-group-item">No purchase history found.</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </td>
+                    <td>
+                        <a href="{% url 'delete_user' p.user.id %}" class="btn btn-sm btn-danger"
+                            onclick="return confirm('Delete this user?')">Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

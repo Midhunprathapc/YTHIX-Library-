@@ -1,0 +1,81 @@
+{% extends 'user_base.html' %}
+{% block content %}
+
+<section id="book-list" class="py-5 bg-light">
+    <div class="container">
+        <div class="row mb-5 align-items-center">
+            <div class="col-md-6">
+                <h2 class="fw-bold text-dark mb-2">Library Collection</h2>
+                <p class="text-secondary">Explore our premium selection of books</p>
+            </div>
+            <div class="col-md-6">
+                <form method="GET" action="{% url 'user_showbooks' %}" class="d-flex shadow-sm rounded-pill bg-white p-1">
+                    <input type="text" name="q" class="form-control border-0 rounded-pill px-4" placeholder="Search by name or author..." value="{{ query }}">
+                    <button type="submit" class="btn btn-dark rounded-pill px-4">Search</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4">
+            {% for book in books %}
+            <div class="col">
+                <div class="card h-100 border-0 shadow-sm bg-white overflow-hidden" 
+                     style="transition: all 0.3s ease;" 
+                     onmouseover="this.style.transform='translateY(-10px)'; this.style.boxShadow='0 14px 28px rgba(0,0,0,0.1)';" 
+                     onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 .125rem .25rem rgba(0,0,0,.075)';"
+                     id="book-{{ book.id }}">
+                    
+                    <div class="position-relative bg-white p-4 d-flex justify-content-center align-items-center" 
+                         style="height: 280px;"
+                         onmouseover="this.querySelector('.overlay').style.opacity='1'" 
+                         onmouseout="this.querySelector('.overlay').style.opacity='0'">
+                        
+                        {% if book.stock > 0 %}
+                            <span class="badge bg-success position-absolute top-0 start-0 m-3 p-2" style="z-index: 2;">AVAILABLE</span>
+                        {% else %}
+                            <span class="badge bg-danger position-absolute top-0 start-0 m-3 p-2" style="z-index: 2;">SOLD OUT</span>
+                        {% endif %}
+                        
+                        <img src="{{ book.image.url }}" alt="{{ book.name }}" 
+                             style="height: 220px; width: 100%; object-fit: contain; filter: drop-shadow(5px 5px 10px rgba(0,0,0,0.1));">
+                        
+                        <div class="overlay position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-center align-items-center" 
+                             style="background: rgba(44, 62, 80, 0.8); backdrop-filter: blur(3px); opacity: 0; transition: 0.4s ease; z-index: 1;">
+                            
+                            {% if book.stock > 0 %}
+                                <a href="{% url 'add_to_cart' book.id %}" class="btn btn-sm mb-2 rounded-pill px-4 fw-bold border-0 text-decoration-none" 
+                                        style="background-color: #f3ae67; color: white;">
+                                    <i class="bi bi-cart-plus me-1"></i> ADD TO CART
+                                </a>
+                                <a href="{% url 'rent_book' book.id %}" class="btn btn-light btn-sm rounded-pill px-4 fw-bold text-dark text-decoration-none">
+                                    <i class="bi bi-calendar-event me-1"></i> RENT NOW
+                                </a>
+                            {% else %}
+                                <p class="text-white fw-bold">Currently Unavailable</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="card-body px-3 pt-3">
+                        <div class="text-warning small mb-1">
+                            <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-half"></i>
+                        </div>
+                        <h6 class="mb-0 text-dark fw-bold text-truncate">{{ book.name }}</h6>
+                        <small class="text-muted d-block mb-2">By {{ book.author }}</small>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-bold fs-5" style="color: #00acc1;">₹{{ book.price }}</span>
+                            <small class="text-secondary">Stock: {{ book.stock }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <h4 class="text-muted">No books found matching your search.</h4>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+{% endblock %}

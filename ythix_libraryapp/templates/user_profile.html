@@ -1,0 +1,181 @@
+{% extends 'user_base.html' %}
+
+{% block extra_css %}
+<style>
+    
+    .profile-card {
+        border-radius: 15px;
+        overflow: hidden;
+        border: 1px solid #e0e0e0;
+    }
+
+    .profile-header {
+        background: linear-gradient(135deg, #1a1a1a 0%, #343a40 100%);
+        padding: 3rem 1rem;
+        display: flex; 
+        flex-direction: column;
+        align-items: center; 
+        justify-content: center; 
+        text-align: center;
+        color: white;
+    }
+
+    .profile-img-container {
+        width: 150px;
+        height: 150px;
+        position: relative;
+        border: 4px solid rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        overflow: hidden; 
+        background-color: #6c757d; 
+        margin-bottom: 1.5rem; 
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .profile-img-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover; /* Prevents stretching */
+        display: block;
+    }
+    
+
+    .data-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: 700;
+        color: #6c757d;
+        margin-bottom: 2px;
+    }
+
+    .data-value {
+        font-size: 1.1rem;
+        color: #212529;
+        font-weight: 500;
+        margin-bottom: 1.5rem;
+    }
+
+    .section-title {
+        border-bottom: 2px solid #f8f9fa;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        color: #0d6efd;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+
+            <div class="card profile-card shadow-sm">
+                <div class="card profile-card shadow-sm border-0">
+                    <div class="profile-header">
+
+                        <div class="profile-img-container shadow">
+                            {% if profile.image %}
+                            <img src="{{ profile.image.url }}" alt="{{ request.user.username }}">
+                            {% else %}
+                            <i class="bi bi-person-fill text-white" style="font-size: 4rem;"></i>
+                            {% endif %}
+                        </div>
+
+                        <div class="header-text">
+                            <h2 class="fw-bold mb-1">
+                                {{ request.user.get_full_name|default:request.user.username }}
+                            </h2>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="card-body p-4 p-md-5">
+                    <div class="row">
+
+                        <div class="col-md-6 border-end-md">
+                            <h5 class="section-title">Account Details</h5>
+
+                            <div class="data-label">Username</div>
+                            <div class="data-value">@{{ request.user.username }}</div>
+
+                            <div class="data-label">Email Address</div>
+                            <div class="data-value">{{ request.user.email }}</div>
+
+                            <div class="data-label">Account Type</div>
+                            <div class="data-value">
+                                {% if request.user.is_staff %}
+                                <span class="badge bg-danger">Administrator</span>
+                                {% else %}
+                                <span class="badge bg-primary">Standard User</span>
+                                {% endif %}
+                            </div>
+
+                            <div class="data-label">Last Login</div>
+                            <div class="data-value">{{ request.user.last_login|date:"d M Y, H:i" }}</div>
+                        </div>
+
+                        <div class="col-md-6 ps-md-4">
+                            <h5 class="section-title">Personal Information</h5>
+
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="data-label">First Name</div>
+                                    <div class="data-value">{{ request.user.first_name|default:"---" }}</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="data-label">Last Name</div>
+                                    <div class="data-value">{{ request.user.last_name|default:"---" }}</div>
+                                </div>
+                            </div>
+
+                            <div class="data-label">Phone Number</div>
+                            <div class="data-value">{{ profile.contact_no|default:"Not linked" }}</div>
+
+                            <div class="data-label">Verification Status</div>
+                            <div class="data-value">
+                                {% if profile.status == 1 %}
+                                <i class="bi bi-check-circle-fill text-success"></i> Verified
+                                {% else %}
+                                <i class="bi bi-exclame-circle text-warning"></i> Pending
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="col-12 mt-4">
+                        
+
+                            <div class="data-label">Primary Address</div>
+                            <div class="p-3 bg-light rounded border mb-4">
+                                {{ profile.address|linebreaksbr|default:"No address on file." }}
+                            </div>
+
+                            {% if profile.bio %}
+                            <div class="data-label">About Me</div>
+                            <div class="data-value">{{ profile.bio }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+                    <div class="d-flex flex-wrap gap-2 justify-content-between">
+                        <div>
+                            <a href="{% url 'edit_profile' %}" class="btn btn-outline-dark px-4">
+                                <i class="bi bi-pencil"></i> Edit Profile
+                            </a>
+                            <a href="{% url 'reset_password' %}" class="btn btn-outline-secondary px-4">
+                                Reset Password
+                            </a>
+                        </div>
+                      
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

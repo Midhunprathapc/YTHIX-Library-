@@ -1,0 +1,85 @@
+{% extends 'user_base.html' %}
+{% block content %}
+<div class="container mt-5">
+    {% if messages %}
+    {% for message in messages %}
+    {% if 'cart_msg' in message.tags %}
+    <div class="alert alert-{{ message.level_tag }} alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
+        <small class="fw-bold">{{ message }}</small>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endif %}
+    {% endfor %}
+    {% endif %}
+    <h2 class="mb-4">Your Shopping Cart ({{ count }} items)</h2>
+
+    {% if cart_items %}
+    <div class="row">
+        <div class="col-md-8">
+            {% for item in cart_items %}
+            <div class="card mb-3 shadow-sm">
+                <div class="row g-0 align-items-center">
+                    <div class="col-md-2 p-2 text-center">
+                        <img src="{{ item.book.image.url }}" class="img-fluid rounded" alt="{{ item.book.name }}"
+                            style="max-height: 100px;">
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ item.book.name }}</h5>
+                            <p class="text-muted mb-0">₹{{ item.book.price }} per unit</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="d-flex align-items-center justify-content-center">
+                            <a href="{% url 'decrease_qty' item.id %}" class="btn btn-outline-secondary btn-sm">-</a>
+                            <span class="mx-3 fw-bold">{{ item.quantity }}</span>
+                            <a href="{% url 'increase_qty' item.id %}" class="btn btn-outline-secondary btn-sm">+</a>
+                        </div>
+                    </div>
+                    <div class="col-md-2 text-center">
+                        <span class="fw-bold">₹{{ item.total_price }}</span>
+                    </div>
+                    <div class="col-md-1 text-center">
+                        <a href="{% url 'remove_from_cart' item.id %}" class="text-danger"><i
+                                class="fas fa-trash"></i></a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-primary">
+                <div class="card-body">
+                    <h5 class="card-title">Order Summary</h5>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Subtotal</span>
+                        <span class="fw-bold">₹{{ total_price }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Shipping</span>
+                        <span class="text-success">FREE</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-4">
+                        <span class="h5">Total</span>
+                        <span class="h5 text-primary">₹{{ total_price }}</span>
+                    </div>
+                    <a href="{% url 'checkout_view' %}" class="btn btn-primary w-100 py-2">Proceed to Checkout</a>
+                    <a href="{% url 'user_showbooks' %}" class="btn btn-link w-100 mt-2 text-decoration-none">Continue
+                        Shopping</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-shopping-cart fa-4x text-muted mb-3"></i>
+        <h3>Your cart is empty</h3>
+        <p class="text-muted">Looks like you haven't added any books yet.</p>
+        <a href="{% url 'user_showbooks' %}" class="btn btn-primary mt-3">Browse Books</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

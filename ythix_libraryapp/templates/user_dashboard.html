@@ -1,0 +1,302 @@
+{% extends 'user_base.html' %}
+{% block content %}
+
+<style>
+    body {
+        background-color: #fdfdfd;
+        font-family: 'Inter', Arial, sans-serif;
+        color: #1a1a1a;
+    }
+
+    .table-ythix,
+    .section-heading-ythix,
+    .badge-ythix,
+    .btn-ythix {
+        border-radius: 0px !important;
+    }
+
+   
+    
+    .table-container-ythix {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin-bottom: 30px;
+    }
+
+    .table-ythix {
+        width: 100%;
+        min-width: 500px;
+        border-collapse: collapse;
+        border: 1px solid #1a1a1a;
+        background: white;
+    }
+
+    .table-ythix th {
+        background: #eeeeee;
+        border: 1px solid #1a1a1a;
+        padding: 12px;
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+
+    .table-ythix td {
+        border: 1px solid #1a1a1a;
+        padding: 12px;
+        font-size: 14px;
+        vertical-align: middle;
+    }
+
+    .section-heading-ythix {
+        font-size: 16px;
+        font-weight: 900;
+        text-transform: uppercase;
+        border-bottom: 3px solid #1a1a1a;
+        padding-bottom: 3px;
+        margin-bottom: 20px;
+        display: inline-block;
+    }
+
+    .btn-ythix {
+        background: #1a1a1a;
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        font-weight: 800;
+        text-transform: uppercase;
+        font-size: 12px;
+        text-decoration: none;
+        display: inline-block;
+        transition: 0.2s;
+        cursor: pointer;
+    }
+
+    .btn-ythix:hover {
+        background: #444;
+        color: white;
+    }
+
+    .badge-ythix {
+        font-size: 10px;
+        font-weight: 900;
+        padding: 2px 6px;
+        border: 1px solid #1a1a1a;
+        text-transform: uppercase;
+    }
+
+   
+    @media (max-width: 768px) {
+        .profile-header-ythix {
+            text-align: center;
+            flex-direction: column !important;
+        }
+
+        .profile-header-ythix .ms-md-4 {
+            margin-left: 0 !important;
+            margin-top: 15px;
+        }
+
+        .profile-header-ythix .ms-md-auto {
+            margin-top: 20px !important;
+        }
+
+        .alert-ythix-responsive {
+            flex-direction: column !important;
+            text-align: center;
+        }
+
+        .alert-ythix-responsive .ms-auto {
+            margin-left: unset !important;
+            margin-top: 10px;
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="container py-4 px-lg-5">
+
+    <div class="row mb-4">
+        <div class="col-12">
+            {% if overdue_rentals.exists %}
+            <div class="alert alert-danger border-0 shadow-sm rounded-4 d-flex align-items-center p-3 mb-3 alert-ythix-responsive"
+                role="alert">
+                <div>
+                    <strong class="d-block">Return Books Immediately!</strong>
+                    <span class="small">You have {{ overdue_rentals.count }} book(s) past their return date.</span>
+                </div>
+                <a href="{% url 'rental_history' %}" class="btn btn-danger btn-sm rounded-pill ms-auto fw-bold">View
+                    Overdue</a>
+            </div>
+            {% endif %}
+
+            {% if pending_fines_total > 0 %}
+            <div class="alert alert-warning border-0 shadow-sm rounded-4 d-flex align-items-center p-3 alert-ythix-responsive"
+                role="alert">
+                <div class="text-dark">
+                    <strong class="d-block">Outstanding Fines Found</strong>
+                    <span class="small">Total balance: <strong>₹{{ pending_fines_total }}</strong></span>
+                </div>
+                <button class="btn btn-dark btn-sm rounded-pill ms-auto fw-bold px-3"
+                    onclick="document.getElementById('fine-section').scrollIntoView({behavior: 'smooth'});">Pay
+                    Fines</button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                <div class="d-flex flex-column flex-md-row align-items-center profile-header-ythix">
+                    <div class="flex-shrink-0 mb-3 mb-md-0">
+                        {% if profile.image %}
+                        <img src="{{ profile.image.url }}" class="rounded-circle border border-3 border-light shadow-sm"
+                            style="width: 90px; height: 90px; object-fit: cover;">
+                        {% else %}
+                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center shadow-sm"
+                            style="width: 90px; height: 90px; font-size: 2.2rem;">
+                            {{ request.user.username|first|upper }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="ms-md-4">
+                        <h2 class="fw-bold mb-1 text-dark">Hello, {{ request.user.first_name }}!</h2>
+                    </div>
+                    <div class="ms-md-auto mt-3 mt-md-0">
+                        <a href="{% url 'edit_profile' %}"
+                            class="btn btn-outline-primary rounded-pill px-4 btn-sm fw-bold">Edit Profile</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <h5 class="section-heading-ythix">Remaining Rental </h5>
+            <div class="table-container-ythix">
+                <table class="table-ythix">
+                    <thead>
+                        <tr>
+                            <th>Item Description</th>
+                            <th>Due Date</th>
+                            <th style="text-align: right;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for rental in recent_rentals %}
+                        <tr>
+                            <td style="font-weight: bold;">{{ rental.book.name }}</td>
+                            <td style="{% if rental.due_date < today %}color: #dc3545; font-weight: 900;{% endif %}">
+                                {{ rental.due_date|date:"d M Y" }}
+                            </td>
+                            <td style="text-align: right;">
+                                <span class="badge-ythix">Active</span>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center py-4 text-muted">No items currently borrowed.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <h5 class="section-heading-ythix">Purchase History</h5>
+            <div class="table-container-ythix">
+                <table class="table-ythix">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Books</th>
+                            <th>Date</th>
+                            <th style="text-align: right;">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in recent_orders %}
+                        <tr>
+                            <td style="font-weight: 800;">#{{ order.id }}</td>
+                            <td>
+                                <div style="font-size: 13px; font-weight: 600;">
+                                    {% for item in order.order_items.all %}
+                                    <div><i class="bi bi-book-half me-1"></i> {{ item.book.name }}</div>
+                                    {% empty %}
+                                    <span class="text-muted">{{ order.items_details|default:"No items found" }}</span>
+                                    {% endfor %}
+                                </div>
+                            </td>
+                            <td style="white-space: nowrap;">{{ order.purchase_date|date:"d M, Y" }}</td>
+                            <td style="text-align: right; font-weight: 900; color: #198754;">₹{{ order.total_price }}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center py-4 text-muted">No transactions found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="fine-section" class="mt-5">
+        <div class="row">
+            <div class="col-md-6">
+                <h5 class="section-heading-ythix">Pending Fines</h5>
+                {% for rental in remaining_fines %}
+                <div class="card border-1 p-3 mb-2" style="border-radius: 0px !important;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div style="font-weight: 900; text-transform: uppercase;">{{ rental.book.name }}</div>
+                            <div style="color: #dc3545; font-size: 18px; font-weight: 900;">₹{{ rental.total_due }}
+                            </div>
+                            {% if rental.late_fee > 0 %}
+                            <div style="margin-top: 4px;">
+                                <span class="badge bg-danger"
+                                    style="font-size: 9px; border-radius: 0px; text-transform: uppercase;">
+                                    Includes ₹50 Overdue Charge
+                                </span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <a href="{% url 'rental_payment' rental.id %}" class="btn-ythix">Pay Fee</a>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted small">No pending fines found.</p>
+                {% endfor %}
+            </div>
+
+            <div class="col-md-6 mt-4 mt-md-0">
+                <h5 class="section-heading-ythix">Fine History</h5>
+                <div class="table-container-ythix">
+                    <table class="table-ythix">
+                        <thead>
+                            <tr>
+                                <th>Book</th>
+                                <th style="text-align: right;">Amount Paid</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for history in fine_history %}
+                            <tr>
+                                <td style="text-transform: uppercase;">{{ history.book.name }}</td>
+                                <td style="text-align: right; font-weight: bold; color: #198754;">PAID
+                                    ₹{{history.fine_paid}}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
