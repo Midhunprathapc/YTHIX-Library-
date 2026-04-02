@@ -339,8 +339,21 @@ def edit_book(request, id):
     authors = Author.objects.all() 
 
     if request.method == "POST":
-        book.name = request.POST.get('name')
-        book.author_id = request.POST.get('author') 
+        name = request.POST.get('name')
+        author_id = request.POST.get('author')
+        
+        exists = Book.objects.filter(
+            name__iexact=name, 
+            author_id=author_id
+        ).exclude(id=id).exists()
+            
+        if exists:
+            messages.error(request, f'Another book with the name "{name}" by this author already exists.')
+            return redirect('edit_book', id=id)
+
+     
+        book.name = name
+        book.author_id = author_id 
         book.book_type_id = request.POST.get('type')
         book.publisher_id = request.POST.get('publisher')  
         book.price = request.POST.get('price')
@@ -351,7 +364,7 @@ def edit_book(request, id):
             book.image = request.FILES.get('image')
 
         book.save()
-        messages.success(request, f"Book '{book.name}' updated!")
+        messages.success(request, f"Book '{book.name}' updated successfully!")
         return redirect('show_books')
 
     return render(request, 'edit_book.html', {
@@ -418,44 +431,47 @@ def user_home(request):
 
 
 def user_dashboard(request):
-
     profile = get_object_or_404(Profile, user=request.user)
     today = timezone.now().date()
-    active_rentals_count = Rental.objects.filter(user=request.user, status=0).count()
+    
+    recent_rentals = Rental.objects.filter(
+        user=request.user, 
+        status__in=[0, 3]
+    ).order_by('-rent_date')[:5]
+
+    all_active = Rental.objects.filter(user=request.user, status=0)
+    remaining_fines = []
+    calculated_total_fines = Decimal('0.00')
+
+    for rental in all_active:
+        usage_charge = Decimal('0.00')
+        overdue_penalty = Decimal('0.00')
+        
+        
+        days_held = (today - rental.rent_date).days
+        if days_held > 10:
+            usage_charge = Decimal('20.00')
+            
+       
+        if rental.due_date < today:
+            overdue_penalty = Decimal('50.00')
+            
+        total_due = usage_charge + overdue_penalty
+        
+        if total_due > 0:
+            rental.total_due = total_due
+            rental.usage_charge = usage_charge
+            rental.overdue_penalty = overdue_penalty
+            remaining_fines.append(rental)
+            calculated_total_fines += total_due
+
+    active_rentals_count = Rental.objects.filter(user=request.user, status__in=[0, 3]).count()
     total_purchases_count = Order.objects.filter(user=request.user).count()
     cart_count = Cart.objects.filter(user=request.user).count()
     recent_orders = Order.objects.filter(user=request.user).order_by('-purchase_date')[:5]
-    recent_rentals = Rental.objects.filter(user=request.user, status=0).order_by('-rent_date')[:5]
-
-    remaining_fines = Rental.objects.filter(
-        user=request.user, 
-        status__in=[0, 2] 
-    ).filter(
-        Q(fine_paid__gt=0) | Q(due_date__lt=today, status=0)
-    ).order_by('-rent_date').distinct()
-
-    calculated_total_fines = Decimal('0.00')
-
-    for rental in remaining_fines:
-        late_fee = Decimal('0.00')
-        if not rental.is_lost and rental.status == 0 and rental.due_date < today:
-            late_fee = Decimal('50.00')
-        rental.late_fee_display = late_fee
-        rental.total_due = rental.fine_paid + late_fee
-        calculated_total_fines += rental.total_due
-
-
-    overdue_rentals = Rental.objects.filter(
-        user=request.user,
-        status=0,
-        due_date__lt=today 
-    )
-
-    fine_history = Rental.objects.filter(
-        user=request.user, 
-        status=1, 
-        fine_paid__gt=0
-    ).order_by('-return_date')
+    
+    overdue_rentals = Rental.objects.filter(user=request.user, status=0, due_date__lt=today)
+    fine_history = Rental.objects.filter(user=request.user, status=1, fine_paid__gt=0).order_by('-return_date')
 
     context = {
         'profile': profile,
@@ -471,8 +487,6 @@ def user_dashboard(request):
         'overdue_rentals': overdue_rentals,
     }
     return render(request, 'user_dashboard.html', context)
-
-
 
 def user_profile(request):
     categories = BookType.objects.all()
@@ -665,7 +679,7 @@ def user_rental_book(request):
 
 def return_book(request, rental_id):
     rental = get_object_or_404(Rental, id=rental_id, user=request.user)
-    if rental.status == 0:
+    if rental.status in [0, 3]:
         rental.status = 1
         rental.return_date = timezone.now().date()
         rental.book.stock += 1
@@ -673,7 +687,6 @@ def return_book(request, rental_id):
         rental.save()
         messages.success(request, "Book returned successfully.")
     return redirect('rental_history')
-
 
 
 def report_lost(request, rental_id):
@@ -697,7 +710,7 @@ def rental_payment(request, rental_id):
     late_fine = Decimal('0.00')
     total_to_pay = Decimal('0.00')
 
-
+    # 1. Calculate the amount to pay
     if rental.is_lost:
         total_to_pay = rental.fine_paid
     else:
@@ -707,16 +720,22 @@ def rental_payment(request, rental_id):
         late_fine = usage_charge + overdue_penalty
         total_to_pay = late_fine
 
-    
+    # 2. Handle Payment Submission
     if request.method == 'POST':
         rental.fine_paid = total_to_pay
-        rental.status = 1  
-        rental.return_date = today
-        if not rental.is_lost:
-            rental.book.stock += 1
-            rental.book.save()
+        
+        if rental.is_lost:
+            # Lost books are closed immediately since they won't be returned
+            rental.status = 1  
+            rental.return_date = today
+        else:
+            # NEW LOGIC: Mark as 'Fine Paid' (Status 3) but do NOT update stock yet
+            # The user still has the physical book
+            rental.status = 3 
             
         rental.save()
+
+        # Send Confirmation Email
         subject = f"Payment Confirmation: {rental.book.name}"
         message = (
             f"Dear {request.user.first_name},\n\n"
@@ -732,6 +751,8 @@ def rental_payment(request, rental_id):
 
         messages.success(request, f"Payment of ₹{total_to_pay} successful!", extra_tags='payment_msg')
         return redirect('rental_history')
+
+    # 3. Render the payment page
     transaction_type = "Lost Book Replacement" if rental.is_lost else "Rental Return Charges"
     
     return render(request, 'user_rentalbookpay.html', {
@@ -741,7 +762,6 @@ def rental_payment(request, rental_id):
         'transaction_type': transaction_type,
         'is_lost_transaction': rental.is_lost
     })
-
 
 # cart 
 

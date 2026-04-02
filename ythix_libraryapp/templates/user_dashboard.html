@@ -15,8 +15,8 @@
         border-radius: 0px !important;
     }
 
-   
-    
+
+
     .table-container-ythix {
         width: 100%;
         overflow-x: auto;
@@ -85,7 +85,7 @@
         text-transform: uppercase;
     }
 
-   
+
     @media (max-width: 768px) {
         .profile-header-ythix {
             text-align: center;
@@ -256,14 +256,18 @@
                             <div style="font-weight: 900; text-transform: uppercase;">{{ rental.book.name }}</div>
                             <div style="color: #dc3545; font-size: 18px; font-weight: 900;">₹{{ rental.total_due }}
                             </div>
-                            {% if rental.late_fee > 0 %}
+
                             <div style="margin-top: 4px;">
-                                <span class="badge bg-danger"
-                                    style="font-size: 9px; border-radius: 0px; text-transform: uppercase;">
-                                    Includes ₹50 Overdue Charge
-                                </span>
+                                {% if rental.overdue_penalty > 0 %}
+                                <span class="badge bg-danger" style="font-size: 9px; border-radius: 0px;">OVERDUE:
+                                    ₹50</span>
+                                {% endif %}
+
+                                {% if rental.usage_charge > 0 %}
+                                <span class="badge bg-warning text-dark"
+                                    style="font-size: 9px; border-radius: 0px;">USAGE (>10 DAYS): ₹20</span>
+                                {% endif %}
                             </div>
-                            {% endif %}
                         </div>
                         <a href="{% url 'rental_payment' rental.id %}" class="btn-ythix">Pay Fee</a>
                     </div>

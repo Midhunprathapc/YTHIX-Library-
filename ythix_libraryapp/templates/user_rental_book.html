@@ -80,42 +80,56 @@
                         <td class="text-center">
                             <div class="d-flex flex-column align-items-center gap-2">
 
+                                {% if r.status == 3 %}
+                                <div class="badge bg-success py-1 px-2 mb-1 shadow-sm w-85">
+                                    <i class="bi bi-check-circle-fill me-1"></i> Fine Paid
+                                </div>
+
+                                <a href="{% url 'return_book' r.id %}"
+                                    class="btn btn-sm btn-outline-success rounded-pill px-3 fw-bold w-85">
+                                    Return Book
+                                </a>
+                                <a href="{% url 'report_lost' r.id %}"
+                                    class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold w-85"
+                                    onclick="return confirm('Report lost?')">
+                                    Report Lost
+                                </a>
+                                {% endif %}
+
                                 {% if r.status == 0 and not r.is_lost %}
                                 {% if r.total_bill > 0 %}
                                 <div class="alert alert-warning py-1 px-2 mb-0 border-0 shadow-sm"
                                     style="font-size: 0.75rem;">
-                                    
-                                    Please pay fine to return book
+                                    <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                                    Late Fine: ₹{{ r.total_bill }}
                                 </div>
-
                                 <a href="{% url 'rental_payment' r.id %}"
-                                    class="btn btn-sm btn-primary rounded-pill px-3 fw-bold shadow-sm">
-                                     Pay Now (₹{{ r.total_bill }})
+                                    class="btn btn-sm btn-primary rounded-pill px-3 fw-bold shadow-sm w-85">
+                                    Pay Fine
                                 </a>
                                 {% else %}
-                                <div class="btn-group gap-2">
-                                    <a href="{% url 'return_book' r.id %}"
-                                        class="btn btn-sm btn-outline-success rounded-pill px-3 fw-bold">
-                                        Return
-                                    </a>
-                                    <a href="{% url 'report_lost' r.id %}"
-                                        class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold"
-                                        onclick="return confirm('Report lost? Book Price + ₹50 Penalty will apply.')">
-                                        Lost
-                                    </a>
-                                </div>
+                                <a href="{% url 'return_book' r.id %}"
+                                    class="btn btn-sm btn-outline-success rounded-pill px-3 fw-bold w-85">
+                                    Return Book
+                                </a>
                                 {% endif %}
+
+                                <a href="{% url 'report_lost' r.id %}"
+                                    class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold w-85"
+                                    onclick="return confirm('Report lost?')">
+                                    Report Lost
+                                </a>
                                 {% endif %}
 
                                 {% if r.is_lost and r.status != 1 %}
-                                <div class="alert alert-danger py-1 px-2 mb-0 border-0 shadow-sm"
+                                <div class="alert alert-danger py-1 px-2 mb-0 border-0 shadow-sm" 
                                     style="font-size: 0.75rem;">
-                                   
-                                    Lost replacement required
+                                    <i class="bi bi-exclamation-octagon-fill me-1"></i>
+                                    Lost Replacement Due
                                 </div>
                                 <a href="{% url 'rental_payment' r.id %}"
-                                    class="btn btn-sm btn-primary rounded-pill px-3 fw-bold shadow-sm">
-                                     Pay ₹{{ r.total_bill }}
+                                    class="btn btn-sm btn-danger rounded-pill px-3 fw-bold shadow-sm w-85">
+                                    Pay ₹{{ r.total_bill }}
                                 </a>
                                 {% endif %}
 
@@ -123,7 +137,7 @@
                                 <span
                                     class="{% if r.total_bill > 0 %}text-primary{% else %}text-success{% endif %} fw-bold small">
                                     <i class="bi bi-check-circle-fill me-1"></i>
-                                    {% if r.total_bill > 0 %}Paid & Closed{% else %}Returned (On Time){% endif %}
+                                    {% if r.total_bill > 0 %}Paid & Closed{% else %}Returned{% endif %}
                                 </span>
                                 {% endif %}
 
