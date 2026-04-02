@@ -12,25 +12,24 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 import os
 from pathlib import Path
+import dj_database_url  # Make sure to install this via pip
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# Build paths inside the project
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
+# Check if running on Vercel
+IS_VERCEL = "VERCEL" in os.environ
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-lfkd^7=ic!0wi#tm*^g&n-za68wpx(q^m2*jhi9)0p1gbukbzx'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = not IS_VERCEL
 
-ALLOWED_HOSTS = []
-
+# Updated Allowed Hosts for Vercel
+ALLOWED_HOSTS = ['.vercel.app', '127.0.0.1', 'localhost', 'now.sh']
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -38,11 +37,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'ythix_libraryapp',
+    'ythix_libraryapp', # Your app
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware', # Added for static files
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -70,74 +70,64 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'ythix_libraryprjct.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'ythix_librarydb', 
-        'USER': 'root',
-        'PASSWORD': '',
-        'HOST': 'localhost',
-        'PORT': '3306',
-        'OPTIONS': {
-            'unix_socket': '/opt/lampp/var/mysql/mysql.sock',
-        },
+# Database Configuration
+# Vercel doesn't support local MySQL. You must use a cloud DB (Postgres/MySQL)
+if IS_VERCEL:
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=os.environ.get('POSTGRES_URL'), # Or your DB environment variable name
+            conn_max_age=600
+        )
     }
-}
-
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'ythix_librarydb', 
+            'USER': 'root',
+            'PASSWORD': '',
+            'HOST': 'localhost',
+            'PORT': '3306',
+            'OPTIONS': {
+                'unix_socket': '/opt/lampp/var/mysql/mysql.sock',
+            },
+        }
+    }
 
 # Password validation
-# https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-
 # Internationalization
-# https://docs.djangoproject.com/en/6.0/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/6.0/howto/static-files/
-
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
+# WhiteNoise storage for production
+if IS_VERCEL:
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
+# Media files
+# Note: Vercel has a read-only filesystem. Use Cloudinary/S3 for user uploads.
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
+# Email Settings (Keep these, but move Password to an Env Var in Vercel for safety!)
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'midhunprathap.in@gmail.com'
-EMAIL_HOST_PASSWORD = 'xioi yjtj ilss nlau'
-
-
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_PASSWORD', 'xioi yjtj ilss nlau')
