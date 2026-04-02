@@ -70,8 +70,8 @@
                             <span class="badge rounded-pill bg-danger px-3">LOST</span>
                             {% elif r.status == 1 %}
                             <span class="badge rounded-pill bg-secondary px-3">RETURNED</span>
-                            {# Added spaces around < , and , and==below #} {% elif r.due_date < today and r.status == 0 %}
-                                <span class="badge rounded-pill bg-warning text-dark px-3">OVERDUE</span>
+                            {% elif r.due_date < today and r.status == 0 %} <span
+                                class="badge rounded-pill bg-warning text-dark px-3">OVERDUE</span>
                                 {% else %}
                                 <span class="badge rounded-pill bg-success px-3">ACTIVE</span>
                                 {% endif %}
@@ -80,8 +80,19 @@
                         <td class="text-center">
                             <div class="d-flex flex-column align-items-center gap-2">
 
-                         
                                 {% if r.status == 0 and not r.is_lost %}
+                                {% if r.total_bill > 0 %}
+                                <div class="alert alert-warning py-1 px-2 mb-0 border-0 shadow-sm"
+                                    style="font-size: 0.75rem;">
+                                    
+                                    Please pay fine to return book
+                                </div>
+
+                                <a href="{% url 'rental_payment' r.id %}"
+                                    class="btn btn-sm btn-primary rounded-pill px-3 fw-bold shadow-sm">
+                                     Pay Now (₹{{ r.total_bill }})
+                                </a>
+                                {% else %}
                                 <div class="btn-group gap-2">
                                     <a href="{% url 'return_book' r.id %}"
                                         class="btn btn-sm btn-outline-success rounded-pill px-3 fw-bold">
@@ -94,23 +105,28 @@
                                     </a>
                                 </div>
                                 {% endif %}
+                                {% endif %}
 
-                               
-                                {% if r.status != 1 and r.total_bill > 0 %}
+                                {% if r.is_lost and r.status != 1 %}
+                                <div class="alert alert-danger py-1 px-2 mb-0 border-0 shadow-sm"
+                                    style="font-size: 0.75rem;">
+                                   
+                                    Lost replacement required
+                                </div>
                                 <a href="{% url 'rental_payment' r.id %}"
                                     class="btn btn-sm btn-primary rounded-pill px-3 fw-bold shadow-sm">
-                                    <i class="bi bi-credit-card me-1"></i> Pay Now (₹{{ r.total_bill }})
+                                     Pay ₹{{ r.total_bill }}
                                 </a>
                                 {% endif %}
 
-                                {# COMPLETED STATUS #}
                                 {% if r.status == 1 %}
                                 <span
                                     class="{% if r.total_bill > 0 %}text-primary{% else %}text-success{% endif %} fw-bold small">
                                     <i class="bi bi-check-circle-fill me-1"></i>
-                                    {% if r.total_bill > 0 %}Paid & Returned{% else %}Returned (On Time){% endif %}
+                                    {% if r.total_bill > 0 %}Paid & Closed{% else %}Returned (On Time){% endif %}
                                 </span>
                                 {% endif %}
+
                             </div>
                         </td>
                     </tr>

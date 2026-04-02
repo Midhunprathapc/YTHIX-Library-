@@ -297,8 +297,6 @@ def add_book(request):
         messages.success(request, "Book added successfully!")
         return redirect('show_books')
     
-    
-    
         
     return render(request, 'add_book.html', {
         'authors': authors,
@@ -695,21 +693,25 @@ def report_lost(request, rental_id):
 
 def rental_payment(request, rental_id):
     rental = get_object_or_404(Rental, id=rental_id, user=request.user)
-    total_to_pay = rental.fine_paid
-    late_fine = Decimal('0.00')
     today = timezone.now().date()
+    late_fine = Decimal('0.00')
+    total_to_pay = Decimal('0.00')
 
-    if not rental.is_lost and rental.status == 0 and rental.due_date < today:
-        late_fine = Decimal('50.00')
-        total_to_pay += late_fine
 
-    transaction_type = "Lost Book Replacement" if rental.is_lost else "Rental Return Charges"
+    if rental.is_lost:
+        total_to_pay = rental.fine_paid
+    else:
+        days_held = (today - rental.rent_date).days
+        usage_charge = Decimal('20.00') if days_held > 10 else Decimal('0.00')
+        overdue_penalty = Decimal('50.00') if rental.due_date < today else Decimal('0.00')
+        late_fine = usage_charge + overdue_penalty
+        total_to_pay = late_fine
 
+    
     if request.method == 'POST':
         rental.fine_paid = total_to_pay
-        rental.status = 1 
+        rental.status = 1  
         rental.return_date = today
-        
         if not rental.is_lost:
             rental.book.stock += 1
             rental.book.save()
@@ -730,7 +732,8 @@ def rental_payment(request, rental_id):
 
         messages.success(request, f"Payment of ₹{total_to_pay} successful!", extra_tags='payment_msg')
         return redirect('rental_history')
-
+    transaction_type = "Lost Book Replacement" if rental.is_lost else "Rental Return Charges"
+    
     return render(request, 'user_rentalbookpay.html', {
         'rental': rental,
         'total_to_pay': total_to_pay,
