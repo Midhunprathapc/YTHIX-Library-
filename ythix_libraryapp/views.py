@@ -590,17 +590,18 @@ def reset_password(request):
 
 
 def user_showbooks(request):
-    query = request.GET.get('q', '')
+    query = request.GET.get('q', '').strip()
     categories_data = []
     all_categories = BookType.objects.all()
     
-    
     for category in all_categories:
         category_books = Book.objects.filter(book_type=category)
+        
         if query:
             category_books = category_books.filter(
                 Q(name__icontains=query) | 
-                Q(author__name__icontains=query)
+                Q(author__name__icontains=query) | 
+                Q(book_type__name__icontains=query) 
             )
         
         if category_books.exists():
@@ -617,7 +618,6 @@ def user_showbooks(request):
         'cart_count': cart_count
     }
     return render(request, 'user_showbooks.html', context)
-
 
 
 def rent_book(request, book_id):
@@ -710,7 +710,6 @@ def rental_payment(request, rental_id):
     late_fine = Decimal('0.00')
     total_to_pay = Decimal('0.00')
 
-    # 1. Calculate the amount to pay
     if rental.is_lost:
         total_to_pay = rental.fine_paid
     else:
@@ -720,22 +719,18 @@ def rental_payment(request, rental_id):
         late_fine = usage_charge + overdue_penalty
         total_to_pay = late_fine
 
-    # 2. Handle Payment Submission
+   
     if request.method == 'POST':
         rental.fine_paid = total_to_pay
         
         if rental.is_lost:
-            # Lost books are closed immediately since they won't be returned
             rental.status = 1  
             rental.return_date = today
-        else:
-            # NEW LOGIC: Mark as 'Fine Paid' (Status 3) but do NOT update stock yet
-            # The user still has the physical book
-            rental.status = 3 
-            
+        else:  
+            rental.status = 3    
         rental.save()
 
-        # Send Confirmation Email
+       
         subject = f"Payment Confirmation: {rental.book.name}"
         message = (
             f"Dear {request.user.first_name},\n\n"
@@ -752,7 +747,7 @@ def rental_payment(request, rental_id):
         messages.success(request, f"Payment of ₹{total_to_pay} successful!", extra_tags='payment_msg')
         return redirect('rental_history')
 
-    # 3. Render the payment page
+  
     transaction_type = "Lost Book Replacement" if rental.is_lost else "Rental Return Charges"
     
     return render(request, 'user_rentalbookpay.html', {
